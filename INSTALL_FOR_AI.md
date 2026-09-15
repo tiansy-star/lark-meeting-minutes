@@ -88,7 +88,7 @@ lark-cli config init --new
 lark-cli auth status --json --verify
 ```
 
-如果尚未登录、Token 失效或权限不完整，按最小必要范围一次性发起授权。不要使用 `--domain`，那会申请整个业务域的全部读写权限：
+如果尚未登录、Token 失效或权限不完整，把完整工作流所需的全部 scope 一次性发起授权。不要使用 `--domain`（会申请整个业务域的全部读写权限），也不要拆成多轮增量授权：
 
 ```bash
 lark-cli auth login \
@@ -96,24 +96,19 @@ lark-cli auth login \
   --no-wait --json
 ```
 
-scope 与用途对应关系：
+以下 9 项都是默认必需，一次发起，不要漏发或多发与该工作流无关的权限：
 
-| 分组 | scope | 用途 |
+| scope | 权限性质 | 用途 |
 | --- | --- | --- |
-| 基础（必需） | `offline_access` | 保持登录并自动刷新用户令牌 |
-| 基础（必需） | `minutes:minutes.basic:read` | 读取妙记标题、时间、时长 |
-| 基础（必需） | `minutes:minutes.artifacts:read` | 读取妙记逐字稿 |
-| 日程受邀人 | `calendar:calendar.event:read` | 搜索关联日程、读取日程参与人 |
-| 日程受邀人 | `vc:meeting.meetingevent:read` | 读取会议详情并核对会议与妙记 |
-| 日程受邀人 | `vc:record:readonly` | 读取会议录制信息以关联妙记 Token |
-| 创建到文件夹 | `docx:document:create` | 创建会议纪要文档 |
-| 创建到文件夹 | `docs:document.content:read` | 创建后回读核验文档 |
-| 创建到文件夹 | `drive:drive.metadata:readonly` | 识别目标文件夹和文档元信息 |
-
-按用户实际需要裁剪后再发起授权：
-
-- 只生成纪要、不创建飞书文档：去掉 `docx:document:create docs:document.content:read drive:drive.metadata:readonly`；
-- 不需要日程受邀人：再去掉 `calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly`。
+| `offline_access` | 用户令牌 | 保持登录并自动刷新用户令牌 |
+| `minutes:minutes.basic:read` | 读 | 读取妙记标题、时间、时长 |
+| `minutes:minutes.artifacts:read` | 读 | 读取妙记逐字稿 |
+| `calendar:calendar.event:read` | 读 | 搜索关联日程、读取日程参与人 |
+| `vc:meeting.meetingevent:read` | 读 | 读取会议详情并核对会议与妙记 |
+| `vc:record:readonly` | 读 | 读取会议录制信息以关联妙记 Token |
+| `docx:document:create` | 写（仅新建） | 创建会议纪要文档 |
+| `docs:document.content:read` | 读 | 创建后回读核验文档 |
+| `drive:drive.metadata:readonly` | 读 | 识别目标文件夹和文档元信息 |
 
 不要申请工作流用不到的写入、删除或权限管理类 scope。
 
@@ -151,9 +146,9 @@ lark-cli auth status --json --verify
 - 当前有效身份为 `user`；
 - 用户 Token 有效；
 - 用户确实是预期登录账号；
-- 妙记（必需）、日程与视频会议（默认流程）、文档/云空间（创建文档时需要）相关权限已授权。
+- 上表 9 项权限已全部授权（妙记、日程与视频会议、文档与云空间）。
 
-可以检查核心 scopes（按实际申请的子集核对）：
+可以检查完整 scopes：
 
 ```bash
 lark-cli auth check --json --scope "offline_access minutes:minutes.basic:read minutes:minutes.artifacts:read calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly docx:document:create docs:document.content:read drive:drive.metadata:readonly"

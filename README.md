@@ -77,35 +77,21 @@ YYYY-MM-DD 会议纪要：<会议主题>
 
 ## 需要的飞书权限
 
-安装时 AI 只申请下面的最小 scope 列表，不会申请整个业务域的全部权限（不使用 `--domain`）。
+安装时 AI 会把下面 9 项一次性提交申请；这些都是完整工作流的必需权限，不会申请整个业务域的全部权限（不使用 `--domain`）。
 
-### 必需：生成会议纪要
+| 权限 | 权限性质 | 用途 |
+| --- | --- | --- |
+| `offline_access` | 用户令牌 | 保持登录并自动刷新令牌 |
+| `minutes:minutes.basic:read` | 读 | 读取妙记标题、时间、时长 |
+| `minutes:minutes.artifacts:read` | 读 | 读取妙记完整逐字稿 |
+| `calendar:calendar.event:read` | 读 | 搜索关联日程、读取日程参与人 |
+| `vc:meeting.meetingevent:read` | 读 | 读取会议详情并核对会议与妙记 |
+| `vc:record:readonly` | 读 | 读取会议录制信息以关联妙记 |
+| `docx:document:create` | 写（仅新建） | 创建会议纪要文档 |
+| `docs:document.content:read` | 读 | 创建后回读核验 |
+| `drive:drive.metadata:readonly` | 读 | 识别目标文件夹和文档信息 |
 
-| 权限 | 用途 |
-| --- | --- |
-| `offline_access` | 保持登录并自动刷新令牌 |
-| `minutes:minutes.basic:read` | 读取妙记标题、时间、时长 |
-| `minutes:minutes.artifacts:read` | 读取妙记完整逐字稿 |
-
-### 默认流程：读取日程受邀人
-
-授权后纪要会带上“参会人员（按日程邀请）”。不授权时仍能生成纪要，只是省略参会人员。
-
-| 权限 | 用途 |
-| --- | --- |
-| `calendar:calendar.event:read` | 搜索关联日程、读取日程参与人 |
-| `vc:meeting.meetingevent:read` | 读取会议详情并核对会议与妙记 |
-| `vc:record:readonly` | 读取会议录制信息以关联妙记 |
-
-### 可选：创建到飞书文件夹
-
-| 权限 | 用途 |
-| --- | --- |
-| `docx:document:create` | 创建会议纪要文档 |
-| `docs:document.content:read` | 创建后回读核验 |
-| `drive:drive.metadata:readonly` | 识别目标文件夹和文档信息 |
-
-给组织管理员说明时，可以按“基础必需 / 日程受邀人 / 创建到文件夹”三组逐条核对。不同飞书 CLI 版本可能为同一接口提供兼容 scope；安装时以 CLI 返回的缺失权限和飞书开放平台审批页为准。
+给组织管理员说明时，按上表逐条核对即可。不同飞书 CLI 版本可能为同一接口提供兼容 scope；安装时以 CLI 返回的缺失权限和飞书开放平台审批页为准。
 
 ## 使用前提
 
