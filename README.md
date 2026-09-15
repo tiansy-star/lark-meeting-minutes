@@ -2,12 +2,21 @@
 
 把飞书妙记链接交给 AI，自动生成结构化会议纪要；需要时还可以读取日程邀请人员，并把纪要创建到指定飞书文件夹或知识库。
 
+仓库地址（复制或扫码传播时使用）：
+
+```text
+https://github.com/tiansy-star/lark-meeting-minutes
+```
+
 ## 最简单的安装方法
 
 把这个仓库的地址发给 Codex 或其他支持 Agent Skills 的 AI，然后发送：
 
 ```text
-请安装这个会议纪要 Skill。完整阅读仓库中的 INSTALL_FOR_AI.md，帮我完成飞书 CLI 安装、Skill 安装、飞书授权和安装验证。
+请安装这个会议纪要 Skill：
+https://github.com/tiansy-star/lark-meeting-minutes
+
+完整阅读仓库中的 INSTALL_FOR_AI.md，帮我完成飞书 CLI 安装、Skill 安装、飞书授权和安装验证。
 ```
 
 AI 会自动执行安装。你只需要在出现提示时：
@@ -140,4 +149,3 @@ lark-cli auth status --json --verify
 ### Skill 没有出现
 
 重新打开 Codex。仍未出现时，让 AI 检查 `lark-meeting-minutes/SKILL.md` 是否已安装到个人 Skills 目录。
-
