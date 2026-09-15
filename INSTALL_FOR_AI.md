@@ -9,7 +9,7 @@
 - 配置和 OAuth 链接必须原样交给用户，并同时生成二维码。
 - 组织管理员审批和用户授权必须由对应人员完成，AI 不得声称可以代为批准。
 - 安装阶段不得创建测试飞书文档，除非用户明确同意并提供目标目录。
-- 不要使用 `--domain all`；只申请本工作流需要的业务域。
+- 不要使用 `--domain` 或 `--domain all`，它们会申请整个业务域的全部读写（含删除、权限管理等）权限；只按本文件列出的最小 scope 列表申请。
 
 ## 1. 检查环境
 
@@ -88,18 +88,34 @@ lark-cli config init --new
 lark-cli auth status --json --verify
 ```
 
-如果尚未登录、Token 失效或权限不完整，使用一次性业务域授权：
+如果尚未登录、Token 失效或权限不完整，按最小必要范围一次性发起授权。不要使用 `--domain`，那会申请整个业务域的全部读写权限：
 
 ```bash
 lark-cli auth login \
-  --domain minutes \
-  --domain calendar \
-  --domain vc \
-  --domain docs \
-  --domain drive \
-  --domain wiki \
+  --scope "offline_access minutes:minutes.basic:read minutes:minutes.artifacts:read calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly docx:document:create docs:document.content:read drive:drive.metadata:readonly" \
   --no-wait --json
 ```
+
+scope 与用途对应关系：
+
+| 分组 | scope | 用途 |
+| --- | --- | --- |
+| 基础（必需） | `offline_access` | 保持登录并自动刷新用户令牌 |
+| 基础（必需） | `minutes:minutes.basic:read` | 读取妙记标题、时间、时长 |
+| 基础（必需） | `minutes:minutes.artifacts:read` | 读取妙记逐字稿 |
+| 日程受邀人 | `calendar:calendar.event:read` | 搜索关联日程、读取日程参与人 |
+| 日程受邀人 | `vc:meeting.meetingevent:read` | 读取会议详情并核对会议与妙记 |
+| 日程受邀人 | `vc:record:readonly` | 读取会议录制信息以关联妙记 Token |
+| 创建到文件夹 | `docx:document:create` | 创建会议纪要文档 |
+| 创建到文件夹 | `docs:document.content:read` | 创建后回读核验文档 |
+| 创建到文件夹 | `drive:drive.metadata:readonly` | 识别目标文件夹和文档元信息 |
+
+按用户实际需要裁剪后再发起授权：
+
+- 只生成纪要、不创建飞书文档：去掉 `docx:document:create docs:document.content:read drive:drive.metadata:readonly`；
+- 不需要日程受邀人：再去掉 `calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly`。
+
+不要申请工作流用不到的写入、删除或权限管理类 scope。
 
 从本次返回值中取得 `verification_url` 和 `device_code`。随后：
 
@@ -135,12 +151,12 @@ lark-cli auth status --json --verify
 - 当前有效身份为 `user`；
 - 用户 Token 有效；
 - 用户确实是预期登录账号；
-- 妙记、日历、视频会议、文档、云空间和知识库相关权限已授权。
+- 妙记（必需）、日程与视频会议（默认流程）、文档/云空间（创建文档时需要）相关权限已授权。
 
-可以检查核心 scopes：
+可以检查核心 scopes（按实际申请的子集核对）：
 
 ```bash
-lark-cli auth check --json --scope "offline_access minutes:minutes.basic:read minutes:minutes.artifacts:read calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly docx:document:create docs:document.content:read drive:drive.metadata:readonly wiki:wiki:readonly wiki:node:read wiki:node:create"
+lark-cli auth check --json --scope "offline_access minutes:minutes.basic:read minutes:minutes.artifacts:read calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly docx:document:create docs:document.content:read drive:drive.metadata:readonly"
 ```
 
 若 CLI 返回的缺失权限属于兼容 scope 或名称发生变化，读取当前版本说明：

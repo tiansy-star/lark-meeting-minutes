@@ -1,6 +1,6 @@
 # 飞书会议纪要 Skill
 
-把飞书妙记链接交给 AI，自动生成结构化会议纪要；需要时还可以读取日程邀请人员，并把纪要创建到指定飞书文件夹或知识库。
+把飞书妙记链接交给 AI，自动生成结构化会议纪要；需要时还可以读取日程邀请人员，并把纪要创建到指定飞书文件夹。
 
 仓库地址：
 
@@ -43,7 +43,7 @@ AI 无法绕过飞书管理员审批，也不应该替你确认授权。
 使用 $lark-meeting-minutes，根据妙记生成会议纪要，并创建到指定飞书目录。
 
 妙记：<妙记链接>
-目录：<飞书文件夹或知识库目录链接>
+目录：<飞书文件夹链接>
 ```
 
 只提供妙记链接时，AI 默认在对话中输出纪要，不会擅自创建飞书文档。
@@ -77,35 +77,35 @@ YYYY-MM-DD 会议纪要：<会议主题>
 
 ## 需要的飞书权限
 
-安装时 AI 会一次性发起相关权限申请。给组织管理员说明时，可以使用下面这张表：
+安装时 AI 只申请下面的最小 scope 列表，不会申请整个业务域的全部权限（不使用 `--domain`）。
 
-| 权限范围 | 用途 |
+### 必需：生成会议纪要
+
+| 权限 | 用途 |
 | --- | --- |
-| 妙记 | 读取妙记基本信息和完整逐字稿 |
-| 日历 | 搜索关联日程并读取邀请人员 |
-| 视频会议 | 核对日程会议与妙记是否属于同一场会议 |
-| 云文档 | 创建会议纪要并在创建后回读检查 |
-| 云空间 | 识别目标文件夹和文档信息 |
-| 知识库 | 将纪要创建到指定知识库目录 |
+| `offline_access` | 保持登录并自动刷新令牌 |
+| `minutes:minutes.basic:read` | 读取妙记标题、时间、时长 |
+| `minutes:minutes.artifacts:read` | 读取妙记完整逐字稿 |
 
-对应的主要用户权限为：
+### 默认流程：读取日程受邀人
 
-```text
-offline_access
-minutes:minutes.basic:read
-minutes:minutes.artifacts:read
-calendar:calendar.event:read
-vc:meeting.meetingevent:read
-vc:record:readonly
-docx:document:create
-docs:document.content:read
-drive:drive.metadata:readonly
-wiki:wiki:readonly
-wiki:node:read
-wiki:node:create
-```
+授权后纪要会带上“参会人员（按日程邀请）”。不授权时仍能生成纪要，只是省略参会人员。
 
-不同飞书 CLI 版本可能为同一接口提供兼容 scope。安装时以 CLI 返回的缺失权限和飞书开放平台审批页为准。
+| 权限 | 用途 |
+| --- | --- |
+| `calendar:calendar.event:read` | 搜索关联日程、读取日程参与人 |
+| `vc:meeting.meetingevent:read` | 读取会议详情并核对会议与妙记 |
+| `vc:record:readonly` | 读取会议录制信息以关联妙记 |
+
+### 可选：创建到飞书文件夹
+
+| 权限 | 用途 |
+| --- | --- |
+| `docx:document:create` | 创建会议纪要文档 |
+| `docs:document.content:read` | 创建后回读核验 |
+| `drive:drive.metadata:readonly` | 识别目标文件夹和文档信息 |
+
+给组织管理员说明时，可以按“基础必需 / 日程受邀人 / 创建到文件夹”三组逐条核对。不同飞书 CLI 版本可能为同一接口提供兼容 scope；安装时以 CLI 返回的缺失权限和飞书开放平台审批页为准。
 
 ## 使用前提
 
@@ -126,11 +126,11 @@ AI 需要临时下载逐字稿才能整理纪要。Skill 默认只把逐字稿�
 npx @larksuite/cli@latest install
 npx skills add . -y -g
 lark-cli config init
-lark-cli auth login --domain minutes --domain calendar --domain vc --domain docs --domain drive --domain wiki
+lark-cli auth login --scope "offline_access minutes:minutes.basic:read minutes:minutes.artifacts:read calendar:calendar.event:read vc:meeting.meetingevent:read vc:record:readonly docx:document:create docs:document.content:read drive:drive.metadata:readonly"
 lark-cli auth status --json --verify
 ```
 
-安装后重新打开 Codex；在输入框中输入 `$lark-meeting-minutes` 检查 Skill 是否可用。
+安装后重新打开你的 AI 工具；在输入框中输入 `$lark-meeting-minutes` 检查 Skill 是否可用。
 
 ## 常见问题
 
@@ -144,7 +144,7 @@ lark-cli auth status --json --verify
 
 ### 没有创建飞书文档
 
-必须明确要求创建，并提供有写入权限的飞书文件夹或知识库目录链接。
+必须明确要求创建，并提供有写入权限的飞书文件夹链接。
 
 ### Skill 没有出现
 
