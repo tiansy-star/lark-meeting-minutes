@@ -2,7 +2,7 @@
 
 把飞书妙记链接交给 AI，自动生成结构化会议纪要；需要时还可以读取日程邀请人员，并把纪要创建到指定飞书文件夹或知识库。
 
-仓库地址（复制或扫码传播时使用）：
+仓库地址：
 
 ```text
 https://github.com/tiansy-star/lark-meeting-minutes
